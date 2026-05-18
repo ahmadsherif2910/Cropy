@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'motion/react';
 import { CheckCircle2, RefreshCw, MoreHorizontal, X } from 'lucide-react';
+import { useProcessingPipeline } from '../hooks/useProcessingPipeline';
 
 interface ProcessingViewProps {
   onComplete: () => void;
@@ -8,24 +9,12 @@ interface ProcessingViewProps {
 }
 
 export default function ProcessingView({ onComplete, onCancel }: ProcessingViewProps) {
-  const [progress, setProgress] = useState(0);
-  const totalPhotos = 30;
-  const currentPhoto = Math.round((progress / 100) * totalPhotos);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        const next = prev + (100 / totalPhotos);
-        if (next >= 100) {
-          clearInterval(interval);
-          setTimeout(onComplete, 1000);
-          return 100;
-        }
-        return next;
-      });
-    }, 2000); // Increment photo and progress every 3 seconds
-    return () => clearInterval(interval);
-  }, [onComplete]);
+  const {
+    currentPhoto,
+    totalPhotos,
+    progress,
+    getStepStatus
+  } = useProcessingPipeline({ totalPhotos: 10, onComplete });
 
 
   const radius = 130;
@@ -89,7 +78,7 @@ export default function ProcessingView({ onComplete, onCancel }: ProcessingViewP
           <span className="text-[10px] font-bold text-black uppercase tracking-[0.2em] mb-2 opacity-50">Ingesting</span>
           <div className="flex items-baseline gap-2">
             <span className="font-display text-5xl md:text-7xl font-bold tracking-tighter leading-none">
-              {Math.min(currentPhoto, totalPhotos)}
+              {progress >= 100 ? totalPhotos : currentPhoto}
             </span>
             <span className="text-xl md:text-2xl font-bold tracking-tighter">/ {totalPhotos}</span>
           </div>
@@ -101,15 +90,15 @@ export default function ProcessingView({ onComplete, onCancel }: ProcessingViewP
         <h3 className="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.2em] mb-4 text-center">Runtime Logs</h3>
         <div className="space-y-2">
           <OperationItem
-            status="done"
+            status={getStepStatus(0)}
             label="Auto-cropping"
           />
           <OperationItem
-            status="active"
+            status={getStepStatus(1)}
             label="Rotating & Straightening"
           />
           <OperationItem
-            status="waiting"
+            status={getStepStatus(2)}
             label="Generating structural previews"
           />
         </div>
