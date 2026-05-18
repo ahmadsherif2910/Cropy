@@ -1,0 +1,60 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@400;600;700;800&display=swap');
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Manrope", sans-serif;
+
+  --color-surface: #F4F1EA;
+  --color-surface-dim: #D4D1CA;
+  --color-surface-bright: #FFFFFF;
+  --color-surface-container-lowest: #FFFFFF;
+  --color-surface-container-low: #F4F1EA;
+  --color-surface-container: #FFFFFF;
+  --color-surface-container-high: #D4D1CA;
+  --color-surface-container-highest: #1A1A1A;
+  
+  --color-on-surface: #1A1A1A;
+  --color-on-surface-variant: #6B6B6B;
+  
+  --color-primary: #E0FF62;
+  --color-on-primary: #000000;
+  
+  --color-primary-electric: #E0FF62;
+  --color-primary-light: #E0FF62;
+  
+  --color-secondary: #000000;
+  --color-tertiary: #D4D1CA;
+  --color-success: #22C55E;
+  --color-error: #EF4444;
+
+  --radius-xl: 0rem; /* Modern Bento often uses sharp or very small radius */
+  --radius-lg: 0rem;
+  --radius-md: 0rem;
+
+  --shadow-glow-primary: 0 4px 0 #000000;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-on-surface font-sans antialiased;
+  }
+}
+
+.glass-panel {
+  @apply bg-white border-2 border-black;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.outline-muted {
+  @apply border-2 border-black;
+}
+
+.brutalist-button {
+  @apply border-2 border-black font-bold uppercase tracking-widest px-6 py-3 transition-all hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#000000] active:translate-y-0 active:shadow-none;
+}
+
+.bento-card {
+  @apply bg-white border-2 border-black p-6 flex flex-col relative overflow-hidden;
+}
