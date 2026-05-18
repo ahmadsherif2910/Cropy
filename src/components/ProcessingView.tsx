@@ -8,8 +8,8 @@ interface ProcessingViewProps {
 }
 
 export default function ProcessingView({ onComplete, onCancel }: ProcessingViewProps) {
-  const [progress, setProgress] = useState(65);
-  const totalPhotos = 12;
+  const [progress, setProgress] = useState(0);
+  const totalPhotos = 30;
   const currentPhoto = Math.floor((progress / 100) * totalPhotos) + 1;
 
   useEffect(() => {
@@ -17,17 +17,18 @@ export default function ProcessingView({ onComplete, onCancel }: ProcessingViewP
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(interval);
-          setTimeout(onComplete, 500);
+          setTimeout(onComplete, 1000);
           return 100;
         }
-        return prev + 1;
+        return prev + 0.5; // Slower, smoother progress
       });
-    }, 100);
+    }, 50);
     return () => clearInterval(interval);
   }, [onComplete]);
 
-  const dashArray = 2 * Math.PI * 130;
-  const dashOffset = dashArray - (dashArray * progress) / 100;
+
+  const radius = 130;
+  const circumference = 2 * Math.PI * radius;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-8 bg-[#F4F1EA] relative">
@@ -40,29 +41,29 @@ export default function ProcessingView({ onComplete, onCancel }: ProcessingViewP
       <div className="relative w-full max-w-[340px] md:max-w-[400px] aspect-square mb-12 md:mb-16 flex items-center justify-center shrink-0">
         {/* Simple Ring Background */}
         <div className="absolute inset-0 rounded-full border-4 border-black/5" />
-        
+
         {/* Progress Circle SVG */}
-        <svg className="w-full h-full -rotate-90" viewBox="0 0 400 400">
+        <svg className="w-full h-full -rotate-90 drop-shadow-[0_0_8px_rgba(224,255,98,0.2)]" viewBox="0 0 400 400">
           <circle
             cx="200"
             cy="200"
-            r="130"
+            r={radius}
             fill="none"
-            stroke="white"
+            stroke="black"
+            strokeOpacity="0.03"
             strokeWidth="32"
           />
           <motion.circle
             cx="200"
             cy="200"
-            r="130"
+            r={radius}
             fill="none"
             stroke="currentColor"
             strokeWidth="32"
             className="text-primary"
-            style={{
-              strokeDasharray: dashArray,
-              strokeDashoffset: dashOffset,
-            }}
+            initial={{ strokeDasharray: circumference, strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset: circumference - (progress / 100) * circumference }}
+            transition={{ duration: 0.2, ease: "linear" }}
           />
           <circle
             cx="200"
@@ -98,24 +99,24 @@ export default function ProcessingView({ onComplete, onCancel }: ProcessingViewP
       <div className="w-full max-w-lg">
         <h3 className="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.2em] mb-4 text-center">Runtime Logs</h3>
         <div className="space-y-2">
-          <OperationItem 
-            status="done" 
-            label="Auto-cropping" 
+          <OperationItem
+            status="done"
+            label="Auto-cropping"
           />
-          <OperationItem 
-            status="active" 
-            label="Rotating & Straightening" 
+          <OperationItem
+            status="active"
+            label="Rotating & Straightening"
           />
-          <OperationItem 
-            status="waiting" 
-            label="Generating structural previews" 
+          <OperationItem
+            status="waiting"
+            label="Generating structural previews"
           />
         </div>
       </div>
 
       {/* Sticky Action Button Container matched to UploadView */}
       <div className="flex justify-center sticky bottom-6 md:bottom-8 z-50 pointer-events-none mt-12 w-full">
-        <motion.button 
+        <motion.button
           initial={{ opacity: 0, scale: 0.8, y: 50 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           whileHover={{ scale: 1.05, y: -4 }}
@@ -135,23 +136,21 @@ export default function ProcessingView({ onComplete, onCancel }: ProcessingViewP
 
 function OperationItem({ status, label }: { status: 'done' | 'active' | 'waiting', label: string }) {
   return (
-    <div className={`p-4 border-2 transition-all flex items-center justify-between ${
-      status === 'active' ? 'bg-primary border-black shadow-[4px_4px_0_0_#000000] translate-x-1 -translate-y-1' : 'bg-white border-black/50 opacity-60'
-    }`}>
+    <div className={`p-4 border-2 transition-all flex items-center justify-between ${status === 'active' ? 'bg-primary border-black shadow-[4px_4px_0_0_#000000] translate-x-1 -translate-y-1' : 'bg-white border-black/50 opacity-60'
+      }`}>
       <div className="flex items-center gap-4">
         {status === 'done' && <CheckCircle2 size={24} className="text-black" />}
         {status === 'active' && <RefreshCw size={24} className="text-black animate-spin" />}
         {status === 'waiting' && <MoreHorizontal size={24} className="text-black/30" />}
-        
+
         <span className={`text-xs font-bold uppercase tracking-widest ${status === 'done' ? 'line-through opacity-50' : 'text-black'}`}>
           {label}
         </span>
       </div>
 
-      <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 border border-black ${
-        status === 'done' ? 'bg-black text-white' :
+      <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 border border-black ${status === 'done' ? 'bg-black text-white' :
         status === 'active' ? 'bg-white text-black' : 'bg-transparent text-black opacity-30'
-      }`}>
+        }`}>
         {status === 'done' ? 'Done' : status === 'active' ? 'Active' : 'Wait'}
       </span>
     </div>
