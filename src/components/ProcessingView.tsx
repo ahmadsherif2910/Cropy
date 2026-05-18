@@ -10,7 +10,7 @@ interface ProcessingViewProps {
 export default function ProcessingView({ onComplete, onCancel }: ProcessingViewProps) {
   const [progress, setProgress] = useState(0);
   const totalPhotos = 30;
-  const currentPhoto = Math.floor((progress / 100) * totalPhotos) + 1;
+  const currentPhoto = Math.round((progress / 100) * totalPhotos);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -23,7 +23,7 @@ export default function ProcessingView({ onComplete, onCancel }: ProcessingViewP
         }
         return next;
       });
-    }, 3000); // Increment photo and progress every 3 seconds
+    }, 2000); // Increment photo and progress every 3 seconds
     return () => clearInterval(interval);
   }, [onComplete]);
 
@@ -64,7 +64,7 @@ export default function ProcessingView({ onComplete, onCancel }: ProcessingViewP
             className="text-primary"
             initial={{ strokeDasharray: circumference, strokeDashoffset: circumference }}
             animate={{ strokeDashoffset: circumference - (progress / 100) * circumference }}
-            transition={{ duration: 3, ease: "linear" }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
           />
           <circle
             cx="200"
