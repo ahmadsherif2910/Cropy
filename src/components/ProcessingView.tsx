@@ -15,14 +15,15 @@ export default function ProcessingView({ onComplete, onCancel }: ProcessingViewP
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 100) {
+        const next = prev + (100 / totalPhotos);
+        if (next >= 100) {
           clearInterval(interval);
           setTimeout(onComplete, 1000);
           return 100;
         }
-        return prev + 0.5; // Slower, smoother progress
+        return next;
       });
-    }, 50);
+    }, 3000); // Increment photo and progress every 3 seconds
     return () => clearInterval(interval);
   }, [onComplete]);
 
@@ -63,7 +64,7 @@ export default function ProcessingView({ onComplete, onCancel }: ProcessingViewP
             className="text-primary"
             initial={{ strokeDasharray: circumference, strokeDashoffset: circumference }}
             animate={{ strokeDashoffset: circumference - (progress / 100) * circumference }}
-            transition={{ duration: 0.2, ease: "linear" }}
+            transition={{ duration: 3, ease: "linear" }}
           />
           <circle
             cx="200"
