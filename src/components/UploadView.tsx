@@ -3,11 +3,12 @@ import { CloudUpload, CheckCircle2, Layers, Cpu, Settings2, LucideIcon, Folder, 
 import { motion, AnimatePresence } from 'motion/react';
 
 interface UploadViewProps {
+  fileCount: number;
+  setFileCount: React.Dispatch<React.SetStateAction<number>>;
   onStartProcessing: () => void;
 }
 
-export default function UploadView({ onStartProcessing }: UploadViewProps) {
-  const [fileCount, setFileCount] = React.useState(0);
+export default function UploadView({ fileCount, setFileCount, onStartProcessing }: UploadViewProps) {
   const [modelType, setModelType] = React.useState<'default' | 'custom'>('default');
   const [customModel, setCustomModel] = React.useState('');
 

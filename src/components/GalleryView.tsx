@@ -89,17 +89,25 @@ export default function GalleryView({ onNewUpload }: GalleryViewProps) {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {[4, 8, 12, 16, 24].map((num) => (
-                    <button
-                      key={num}
-                      onClick={() => setDisplayCount(num)}
-                      className={`px-3 py-1 text-[10px] font-black uppercase tracking-tighter border border-black transition-colors ${
-                        displayCount === num ? 'bg-black text-white' : 'bg-white text-black hover:bg-stone-50'
-                      }`}
-                    >
-                      {num}
-                    </button>
-                  ))}
+                  {[4, 8, 12, 16, 24].map((num) => {
+                    const isDisabled = num > allImages.length;
+                    return (
+                      <button
+                        key={num}
+                        disabled={isDisabled}
+                        onClick={() => setDisplayCount(num)}
+                        className={`px-3 py-1 text-[10px] font-black uppercase tracking-tighter border transition-colors ${
+                          isDisabled
+                            ? 'border-black/20 text-black/30 bg-stone-100 cursor-not-allowed opacity-50'
+                            : displayCount === num
+                              ? 'border-black bg-black text-white'
+                              : 'border-black bg-white text-black hover:bg-stone-50'
+                        }`}
+                      >
+                        {num}
+                      </button>
+                    );
+                  })}
                   <button
                     onClick={() => setDisplayCount(allImages.length)}
                     className={`px-3 py-1 text-[10px] font-black uppercase tracking-tighter border border-black transition-colors ${

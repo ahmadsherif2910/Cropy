@@ -4,17 +4,17 @@ import { CheckCircle2, RefreshCw, MoreHorizontal, X } from 'lucide-react';
 import { useProcessingPipeline } from '../hooks/useProcessingPipeline';
 
 interface ProcessingViewProps {
+  totalPhotos: number;
   onComplete: () => void;
   onCancel: () => void;
 }
 
-export default function ProcessingView({ onComplete, onCancel }: ProcessingViewProps) {
+export default function ProcessingView({ totalPhotos, onComplete, onCancel }: ProcessingViewProps) {
   const {
     currentPhoto,
-    totalPhotos,
     progress,
     getStepStatus
-  } = useProcessingPipeline({ totalPhotos: 10, onComplete });
+  } = useProcessingPipeline({ totalPhotos, onComplete });
 
 
   const radius = 130;

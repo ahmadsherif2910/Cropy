@@ -12,17 +12,46 @@ import { motion, AnimatePresence } from 'motion/react';
 
 export default function App() {
   const [activeScreen, setActiveScreen] = useState<Screen>('upload');
+  const [uploadedCount, setUploadedCount] = useState(0);
 
   const renderScreen = () => {
     switch (activeScreen) {
       case 'upload':
-        return <UploadView onStartProcessing={() => setActiveScreen('processing')} />;
+        return (
+          <UploadView 
+            fileCount={uploadedCount}
+            setFileCount={setUploadedCount}
+            onStartProcessing={() => setActiveScreen('processing')} 
+          />
+        );
       case 'processing':
-        return <ProcessingView onComplete={() => setActiveScreen('gallery')} onCancel={() => setActiveScreen('upload')} />;
+        return (
+          <ProcessingView 
+            totalPhotos={uploadedCount || 10}
+            onComplete={() => setActiveScreen('gallery')} 
+            onCancel={() => {
+              setUploadedCount(0); // Reset count on cancel
+              setActiveScreen('upload');
+            }} 
+          />
+        );
       case 'gallery':
-        return <GalleryView onNewUpload={() => setActiveScreen('upload')} />;
+        return (
+          <GalleryView 
+            onNewUpload={() => {
+              setUploadedCount(0); // Reset count for new upload
+              setActiveScreen('upload');
+            }} 
+          />
+        );
       default:
-        return <UploadView onStartProcessing={() => setActiveScreen('processing')} />;
+        return (
+          <UploadView 
+            fileCount={uploadedCount}
+            setFileCount={setUploadedCount}
+            onStartProcessing={() => setActiveScreen('processing')} 
+          />
+        );
     }
   };
 
