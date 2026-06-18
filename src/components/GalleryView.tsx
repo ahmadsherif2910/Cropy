@@ -16,6 +16,11 @@ export default function GalleryView({ images, onNewUpload }: GalleryViewProps) {
   const [expandedImage, setExpandedImage] = useState<GalleryImage | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   
+  // Touch state for swipe to navigate
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const minSwipeDistance = 50;
+  
   const displayedImages = images.slice(0, displayCount);
 
   const toggleSelection = (id: string, e: React.MouseEvent) => {
@@ -95,6 +100,27 @@ export default function GalleryView({ images, onNewUpload }: GalleryViewProps) {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [expandedImage, handlePrevious, handleNext]);
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    if (isLeftSwipe) {
+      handleNext();
+    } else if (isRightSwipe) {
+      handlePrevious();
+    }
+  };
 
   return (
     <div className="p-4 md:p-8 min-h-full bg-[#F4F1EA]">
@@ -232,6 +258,9 @@ export default function GalleryView({ images, onNewUpload }: GalleryViewProps) {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center p-4 sm:p-8 backdrop-blur-sm"
             onClick={() => setExpandedImage(null)}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
           >
             <div className="absolute top-6 right-6 flex gap-4">
               <button 
@@ -273,12 +302,7 @@ export default function GalleryView({ images, onNewUpload }: GalleryViewProps) {
               </button>
             )}
 
-            <motion.img 
-              key={expandedImage.id}
-              initial={{ scale: 0.9, y: 20, opacity: 0 }}
-              animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.9, y: 20, opacity: 0 }}
-              transition={{ duration: 0.2 }}
+            <img 
               src={expandedImage.url} 
               alt={expandedImage.filename}
               className="max-w-[80vw] max-h-[70vh] object-contain border-4 border-white shadow-[16px_16px_0_0_#E0FF62]"
