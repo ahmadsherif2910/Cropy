@@ -103,10 +103,6 @@ export default function ProcessingView({ files, modelSrc, onComplete, onCancel }
             status={getStepStatus(1)}
             label="Rotating & Straightening"
           />
-          <OperationItem
-            status={getStepStatus(2)}
-            label="Generating structural previews"
-          />
         </div>
       </div>
 

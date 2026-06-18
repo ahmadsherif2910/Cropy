@@ -15,7 +15,7 @@ export function useProcessingPipeline({ files, modelSrc, onComplete }: UseProces
 
   const totalPhotos = files.length;
   const currentTotal = state.stepIndex === 1 ? Math.max(1, processedImages.current.length) : totalPhotos;
-  const totalSteps = 3; 
+  const totalSteps = 2; 
 
   const progress = state.stepIndex >= totalSteps
     ? 100
@@ -116,14 +116,8 @@ export function useProcessingPipeline({ files, modelSrc, onComplete }: UseProces
 
         if (isCancelled) return;
 
-        // Step 2: Generating structural previews (Placeholder for future code)
-        setState({ stepIndex: 2, photo: 0 });
-        await new Promise(r => setTimeout(r, 500)); // Simulate work
-
-        if (isCancelled) return;
-        
         // Final completion state
-        setState({ stepIndex: 3, photo: totalPhotos });
+        setState({ stepIndex: 2, photo: totalPhotos });
         
         console.log("[Pipeline] All photos processed successfully!");
         // Wait briefly to show 100% completion state
