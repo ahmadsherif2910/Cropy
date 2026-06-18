@@ -12,6 +12,8 @@ export default function UploadView({ fileCount, setFileCount, onStartProcessing 
   const [modelType, setModelType] = React.useState<'default' | 'custom'>('default');
   const [customModel, setCustomModel] = React.useState('');
 
+  const isStartDisabled = fileCount === 0 || (modelType === 'custom' && customModel === '');
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setFileCount(prev => prev + (e.target.files?.length || 0));
@@ -147,10 +149,15 @@ export default function UploadView({ fileCount, setFileCount, onStartProcessing 
           <motion.button
             initial={{ opacity: 0, scale: 0.8, y: 50 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            whileHover={{ scale: 1.05, y: -4 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={isStartDisabled ? {} : { scale: 1.05, y: -4 }}
+            whileTap={isStartDisabled ? {} : { scale: 0.95 }}
             onClick={onStartProcessing}
-            className="brutalist-button bg-black text-white shadow-[8px_8px_0_0_#E0FF62] flex items-center gap-4 text-lg border-primary border-4 whitespace-nowrap min-w-[280px] md:min-w-0 pointer-events-auto"
+            disabled={isStartDisabled}
+            className={`brutalist-button text-white flex items-center gap-4 text-lg border-4 whitespace-nowrap min-w-[280px] md:min-w-0 pointer-events-auto ${
+              isStartDisabled 
+                ? 'bg-stone-500 border-stone-600 opacity-50 cursor-not-allowed grayscale' 
+                : 'bg-black border-primary shadow-[8px_8px_0_0_#E0FF62]'
+            }`}
           >
             <div className="w-10 h-10 bg-primary flex items-center justify-center text-black">
               <Play size={24} fill="currentColor" />
