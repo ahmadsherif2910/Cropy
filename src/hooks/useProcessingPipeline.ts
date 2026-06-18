@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { loadModel, preprocess, runInference } from '../utils/inference';
-import { extractCrops } from '../utils/imageProcessing';
+import { extractCrops, drawDetections } from '../utils/imageProcessing';
 import { GalleryImage } from '../types';
 
 interface UseProcessingPipelineProps {
