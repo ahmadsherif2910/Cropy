@@ -2,19 +2,23 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { CheckCircle2, RefreshCw, MoreHorizontal, X } from 'lucide-react';
 import { useProcessingPipeline } from '../hooks/useProcessingPipeline';
+import { GalleryImage } from '../types';
 
 interface ProcessingViewProps {
-  totalPhotos: number;
-  onComplete: () => void;
+  files: File[];
+  modelSrc: string | File;
+  onComplete: (images: GalleryImage[]) => void;
   onCancel: () => void;
 }
 
-export default function ProcessingView({ totalPhotos, onComplete, onCancel }: ProcessingViewProps) {
+export default function ProcessingView({ files, modelSrc, onComplete, onCancel }: ProcessingViewProps) {
   const {
     currentPhoto,
     progress,
     getStepStatus
-  } = useProcessingPipeline({ totalPhotos, onComplete });
+  } = useProcessingPipeline({ files, modelSrc, onComplete });
+
+  const totalPhotos = files.length;
 
 
   const radius = 130;

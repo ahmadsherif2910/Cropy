@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Screen } from './types';
+import { Screen, GalleryImage } from './types';
 import UploadView from './components/UploadView';
 import ProcessingView from './components/ProcessingView';
 import GalleryView from './components/GalleryView';
@@ -12,25 +12,34 @@ import { motion, AnimatePresence } from 'motion/react';
 
 export default function App() {
   const [activeScreen, setActiveScreen] = useState<Screen>('upload');
-  const [uploadedCount, setUploadedCount] = useState(0);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [processedImages, setProcessedImages] = useState<GalleryImage[]>([]);
+  const [modelSrc, setModelSrc] = useState<string | File>('/best.onnx');
 
   const renderScreen = () => {
     switch (activeScreen) {
       case 'upload':
         return (
           <UploadView 
-            fileCount={uploadedCount}
-            setFileCount={setUploadedCount}
-            onStartProcessing={() => setActiveScreen('processing')} 
+            files={uploadedFiles}
+            setFiles={setUploadedFiles}
+            onStartProcessing={(src) => {
+              setModelSrc(src);
+              setActiveScreen('processing');
+            }} 
           />
         );
       case 'processing':
         return (
           <ProcessingView 
-            totalPhotos={uploadedCount || 10}
-            onComplete={() => setActiveScreen('gallery')} 
+            files={uploadedFiles}
+            modelSrc={modelSrc}
+            onComplete={(images) => {
+              setProcessedImages(images);
+              setActiveScreen('gallery');
+            }} 
             onCancel={() => {
-              setUploadedCount(0); // Reset count on cancel
+              setUploadedFiles([]);
               setActiveScreen('upload');
             }} 
           />
@@ -38,8 +47,10 @@ export default function App() {
       case 'gallery':
         return (
           <GalleryView 
+            images={processedImages}
             onNewUpload={() => {
-              setUploadedCount(0); // Reset count for new upload
+              setUploadedFiles([]);
+              setProcessedImages([]);
               setActiveScreen('upload');
             }} 
           />
@@ -47,9 +58,12 @@ export default function App() {
       default:
         return (
           <UploadView 
-            fileCount={uploadedCount}
-            setFileCount={setUploadedCount}
-            onStartProcessing={() => setActiveScreen('processing')} 
+            files={uploadedFiles}
+            setFiles={setUploadedFiles}
+            onStartProcessing={(src) => {
+              setModelSrc(src);
+              setActiveScreen('processing');
+            }} 
           />
         );
     }
@@ -74,4 +88,5 @@ export default function App() {
     </div>
   );
 }
+
 

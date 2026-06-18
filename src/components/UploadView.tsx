@@ -3,25 +3,34 @@ import { CloudUpload, CheckCircle2, Layers, Cpu, Settings2, LucideIcon, Folder, 
 import { motion, AnimatePresence } from 'motion/react';
 
 interface UploadViewProps {
-  fileCount: number;
-  setFileCount: React.Dispatch<React.SetStateAction<number>>;
-  onStartProcessing: () => void;
+  files: File[];
+  setFiles: React.Dispatch<React.SetStateAction<File[]>>;
+  onStartProcessing: (modelSrc: string | File) => void;
 }
 
-export default function UploadView({ fileCount, setFileCount, onStartProcessing }: UploadViewProps) {
+export default function UploadView({ files, setFiles, onStartProcessing }: UploadViewProps) {
   const [modelType, setModelType] = React.useState<'default' | 'custom'>('default');
   const [customModel, setCustomModel] = React.useState('');
+  const [customModelFile, setCustomModelFile] = React.useState<File | null>(null);
 
-  const isStartDisabled = fileCount === 0 || (modelType === 'custom' && customModel === '');
+  const fileCount = files.length;
+  const isStartDisabled = fileCount === 0 || (modelType === 'custom' && !customModelFile);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFileCount(prev => prev + (e.target.files?.length || 0));
+    if (e.target.files && e.target.files.length > 0) {
+      setFiles(prev => [...prev, ...Array.from(e.target.files as FileList)]);
+    }
+  };
+
+  const handleStart = () => {
+    if (modelType === 'default') {
+      onStartProcessing('/best.onnx');
+    } else if (customModelFile) {
+      onStartProcessing(customModelFile);
     }
   };
 
   return (
-    /* Fixed: Adjusted bottom padding (pb-6 md:pb-8) to match the gap size precisely */
     <div className="pt-4 px-4 pb-6 md:pt-8 md:px-8 md:pb-8 flex flex-col gap-6 md:gap-8 min-h-full bg-[#F4F1EA] relative">
       <header className="flex flex-col border-b-2 border-black pb-6">
         <span className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-50 mb-2">Ingestion / Data Pipeline</span>
@@ -117,6 +126,7 @@ export default function UploadView({ fileCount, setFileCount, onStartProcessing 
                       onChange={(e) => {
                         if (e.target.files?.[0]) {
                           setCustomModel(e.target.files[0].name);
+                          setCustomModelFile(e.target.files[0]);
                         }
                       }}
                     />
@@ -142,8 +152,6 @@ export default function UploadView({ fileCount, setFileCount, onStartProcessing 
         </div>
       </div>
 
-      {/* Sticky Action Button Container */}
-      {/* Fixed: Updated bottom-6 md:bottom-8 to match the layout's structural gaps */}
       <div className="flex justify-center sticky bottom-6 md:bottom-8 z-50 pointer-events-none">
         <AnimatePresence>
           <motion.button
@@ -151,7 +159,7 @@ export default function UploadView({ fileCount, setFileCount, onStartProcessing 
             animate={{ opacity: 1, scale: 1, y: 0 }}
             whileHover={isStartDisabled ? {} : { scale: 1.05, y: -4 }}
             whileTap={isStartDisabled ? {} : { scale: 0.95 }}
-            onClick={onStartProcessing}
+            onClick={handleStart}
             disabled={isStartDisabled}
             className={`brutalist-button text-white flex items-center gap-4 text-lg border-4 whitespace-nowrap min-w-[280px] md:min-w-0 pointer-events-auto ${
               isStartDisabled 

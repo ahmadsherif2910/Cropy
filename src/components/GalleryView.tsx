@@ -5,15 +5,15 @@ import { GalleryImage } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface GalleryViewProps {
+  images: GalleryImage[];
   onNewUpload: () => void;
 }
 
-export default function GalleryView({ onNewUpload }: GalleryViewProps) {
+export default function GalleryView({ images, onNewUpload }: GalleryViewProps) {
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
-  const [displayCount, setDisplayCount] = useState(GALLERY_IMAGES.length * 2);
-  const allImages = [...GALLERY_IMAGES, ...GALLERY_IMAGES];
+  const [displayCount, setDisplayCount] = useState(images.length || 10);
   
-  const displayedImages = allImages.slice(0, displayCount);
+  const displayedImages = images.slice(0, displayCount);
 
   return (
     <div className="p-4 md:p-8 min-h-full bg-[#F4F1EA]">
@@ -72,25 +72,25 @@ export default function GalleryView({ onNewUpload }: GalleryViewProps) {
                 <div>
                   <div className="flex justify-between items-center mb-4">
                     <span className="text-[10px] font-black uppercase tracking-widest">Display Limit</span>
-                    <span className="font-mono text-xs font-bold bg-primary px-2 py-1 border border-black">{displayCount} / {allImages.length}</span>
+                    <span className="font-mono text-xs font-bold bg-primary px-2 py-1 border border-black">{displayCount} / {images.length}</span>
                   </div>
                   <input 
                     type="range"
                     min="1"
-                    max={allImages.length}
+                    max={images.length}
                     value={displayCount}
                     onChange={(e) => setDisplayCount(parseInt(e.target.value))}
                     className="w-full h-2 bg-stone-200 appearance-none cursor-pointer accent-black outline-none border border-black"
                   />
                   <div className="flex justify-between mt-2 text-[8px] font-bold uppercase opacity-50">
                     <span>1 Asset</span>
-                    <span>{allImages.length} Assets</span>
+                    <span>{images.length} Assets</span>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
                   {[4, 8, 12, 16, 24].map((num) => {
-                    const isDisabled = num > allImages.length;
+                    const isDisabled = num > images.length;
                     return (
                       <button
                         key={num}
@@ -109,9 +109,9 @@ export default function GalleryView({ onNewUpload }: GalleryViewProps) {
                     );
                   })}
                   <button
-                    onClick={() => setDisplayCount(allImages.length)}
+                    onClick={() => setDisplayCount(images.length)}
                     className={`px-3 py-1 text-[10px] font-black uppercase tracking-tighter border border-black transition-colors ${
-                      displayCount === allImages.length ? 'bg-black text-white' : 'bg-white text-black hover:bg-stone-50'
+                      displayCount === images.length ? 'bg-black text-white' : 'bg-white text-black hover:bg-stone-50'
                     }`}
                   >
                     All
