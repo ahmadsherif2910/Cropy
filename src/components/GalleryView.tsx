@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Download, Plus, Search, Filter, Check, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { GalleryImage } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
+import JSZip from 'jszip';
 
 interface GalleryViewProps {
   images: GalleryImage[];
@@ -13,6 +14,7 @@ export default function GalleryView({ images, onNewUpload }: GalleryViewProps) {
   const [displayCount, setDisplayCount] = useState(images.length || 10);
   const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
   const [expandedImage, setExpandedImage] = useState<GalleryImage | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
   
   const displayedImages = images.slice(0, displayCount);
 
@@ -27,11 +29,38 @@ export default function GalleryView({ images, onNewUpload }: GalleryViewProps) {
     setSelectedImages(newSet);
   };
 
-  const handleDownload = () => {
-    if (selectedImages.size > 0) {
-      alert(`Preparing zip download for ${selectedImages.size} selected images...`);
-    } else {
-      alert(`Preparing zip download for all ${images.length} images...`);
+  const handleDownload = async () => {
+    try {
+      setIsDownloading(true);
+      
+      const zip = new JSZip();
+      
+      const targetImages = selectedImages.size > 0 
+        ? images.filter(img => selectedImages.has(img.id))
+        : images;
+
+      const fetchPromises = targetImages.map(async (img) => {
+        const response = await fetch(img.url);
+        const blob = await response.blob();
+        zip.file(img.filename, blob);
+      });
+
+      await Promise.all(fetchPromises);
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(zipBlob);
+      a.download = `cropy_export_${Date.now()}.zip`;
+      a.click();
+      
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      
+    } catch (err) {
+      console.error("Failed to generate zip file:", err);
+      alert("An error occurred while preparing the download.");
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -88,10 +117,13 @@ export default function GalleryView({ images, onNewUpload }: GalleryViewProps) {
           </button>
           <button 
             onClick={handleDownload}
-            className="brutalist-button bg-black text-white flex items-center justify-center gap-2 text-sm"
+            disabled={isDownloading}
+            className={`brutalist-button flex items-center justify-center gap-2 text-sm transition-all ${
+              isDownloading ? 'bg-stone-500 text-stone-200 cursor-wait' : 'bg-black text-white'
+            }`}
           >
-            <Download size={20} />
-            {selectedImages.size > 0 ? `Download Selected (${selectedImages.size})` : 'Download All'}
+            <Download size={20} className={isDownloading ? "animate-pulse" : ""} />
+            {isDownloading ? 'Zipping...' : (selectedImages.size > 0 ? `Download Selected (${selectedImages.size})` : 'Download All')}
           </button>
         </div>
       </header>
