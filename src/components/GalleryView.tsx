@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Download, Plus, Search, Filter, Check, X } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Download, Plus, Search, Filter, Check, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { GalleryImage } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -34,6 +34,38 @@ export default function GalleryView({ images, onNewUpload }: GalleryViewProps) {
       alert(`Preparing zip download for all ${images.length} images...`);
     }
   };
+
+  const currentIndex = expandedImage ? displayedImages.findIndex(img => img.id === expandedImage.id) : -1;
+
+  const handlePrevious = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (currentIndex > 0) {
+      setExpandedImage(displayedImages[currentIndex - 1]);
+    }
+  }, [currentIndex, displayedImages]);
+
+  const handleNext = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (currentIndex !== -1 && currentIndex < displayedImages.length - 1) {
+      setExpandedImage(displayedImages[currentIndex + 1]);
+    }
+  }, [currentIndex, displayedImages]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!expandedImage) return;
+      if (e.key === 'ArrowLeft') {
+        handlePrevious();
+      } else if (e.key === 'ArrowRight') {
+        handleNext();
+      } else if (e.key === 'Escape') {
+        setExpandedImage(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [expandedImage, handlePrevious, handleNext]);
 
   return (
     <div className="p-4 md:p-8 min-h-full bg-[#F4F1EA]">
@@ -191,18 +223,40 @@ export default function GalleryView({ images, onNewUpload }: GalleryViewProps) {
               </button>
             </div>
             
+            {currentIndex > 0 && (
+              <button 
+                onClick={handlePrevious}
+                className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-12 h-12 bg-white border-2 border-black flex items-center justify-center hover:bg-primary transition-colors z-10"
+              >
+                <ChevronLeft size={32} />
+              </button>
+            )}
+
+            {currentIndex < displayedImages.length - 1 && (
+              <button 
+                onClick={handleNext}
+                className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-12 h-12 bg-white border-2 border-black flex items-center justify-center hover:bg-primary transition-colors z-10"
+              >
+                <ChevronRight size={32} />
+              </button>
+            )}
+
             <motion.img 
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
+              key={expandedImage.id}
+              initial={{ scale: 0.9, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.9, y: 20, opacity: 0 }}
+              transition={{ duration: 0.2 }}
               src={expandedImage.url} 
               alt={expandedImage.filename}
-              className="max-w-full max-h-[80vh] object-contain border-4 border-white shadow-[16px_16px_0_0_#E0FF62]"
+              className="max-w-[80vw] max-h-[70vh] object-contain border-4 border-white shadow-[16px_16px_0_0_#E0FF62]"
               onClick={(e) => e.stopPropagation()}
             />
             
             <div className="mt-8 bg-white border-2 border-black p-4 inline-flex flex-col items-center">
-              <span className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-1">Filename</span>
+              <span className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-1">
+                {currentIndex + 1} / {displayedImages.length}
+              </span>
               <span className="font-mono font-bold text-sm">{expandedImage.filename}</span>
             </div>
           </motion.div>
