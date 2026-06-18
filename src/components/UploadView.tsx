@@ -54,7 +54,7 @@ export default function UploadView({ files, setFiles, onStartProcessing }: Uploa
             <p className="text-on-surface-variant text-xs md:text-sm mb-8 md:mb-12 text-center max-w-sm font-medium">
               {fileCount > 0
                 ? `${fileCount} assets staged for processing.`
-                : "Supports RAW, TIFF, and JPEG formats. Structural intelligence applied automatically."
+                : "Upload your photos or entire folders. The local AI engine will automatically crop, align, and organize them."
               }
             </p>
 
