@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Download, Plus, Search, Filter, Check } from 'lucide-react';
-import { GALLERY_IMAGES } from '../constants';
+import { Download, Plus, Search, Filter, Check, X } from 'lucide-react';
 import { GalleryImage } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -12,8 +11,29 @@ interface GalleryViewProps {
 export default function GalleryView({ images, onNewUpload }: GalleryViewProps) {
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
   const [displayCount, setDisplayCount] = useState(images.length || 10);
+  const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
+  const [expandedImage, setExpandedImage] = useState<GalleryImage | null>(null);
   
   const displayedImages = images.slice(0, displayCount);
+
+  const toggleSelection = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newSet = new Set(selectedImages);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedImages(newSet);
+  };
+
+  const handleDownload = () => {
+    if (selectedImages.size > 0) {
+      alert(`Preparing zip download for ${selectedImages.size} selected images...`);
+    } else {
+      alert(`Preparing zip download for all ${images.length} images...`);
+    }
+  };
 
   return (
     <div className="p-4 md:p-8 min-h-full bg-[#F4F1EA]">
@@ -34,9 +54,12 @@ export default function GalleryView({ images, onNewUpload }: GalleryViewProps) {
             <Plus size={20} />
             New Upload
           </button>
-          <button className="brutalist-button bg-black text-white flex items-center justify-center gap-2 text-sm">
+          <button 
+            onClick={handleDownload}
+            className="brutalist-button bg-black text-white flex items-center justify-center gap-2 text-sm"
+          >
             <Download size={20} />
-            Download All
+            {selectedImages.size > 0 ? `Download Selected (${selectedImages.size})` : 'Download All'}
           </button>
         </div>
       </header>
@@ -125,9 +148,66 @@ export default function GalleryView({ images, onNewUpload }: GalleryViewProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         {displayedImages.map((image, idx) => (
-          <ImageCard key={`${image.id}-${idx}`} image={image} index={idx} />
+          <ImageCard 
+            key={`${image.id}-${idx}`} 
+            image={image} 
+            index={idx} 
+            isSelected={selectedImages.has(image.id)}
+            onToggleSelect={toggleSelection}
+            onClick={() => setExpandedImage(image)}
+          />
         ))}
       </div>
+
+      {/* Expanded Image Modal */}
+      <AnimatePresence>
+        {expandedImage && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center p-4 sm:p-8 backdrop-blur-sm"
+            onClick={() => setExpandedImage(null)}
+          >
+            <div className="absolute top-6 right-6 flex gap-4">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const a = document.createElement('a');
+                  a.href = expandedImage.url;
+                  a.download = expandedImage.filename;
+                  a.click();
+                }}
+                className="brutalist-button bg-primary text-black flex items-center gap-2 p-2"
+              >
+                <Download size={20} />
+                <span className="hidden sm:inline text-xs">Download</span>
+              </button>
+              <button 
+                onClick={() => setExpandedImage(null)}
+                className="w-12 h-12 bg-white border-2 border-black flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <motion.img 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              src={expandedImage.url} 
+              alt={expandedImage.filename}
+              className="max-w-full max-h-[80vh] object-contain border-4 border-white shadow-[16px_16px_0_0_#E0FF62]"
+              onClick={(e) => e.stopPropagation()}
+            />
+            
+            <div className="mt-8 bg-white border-2 border-black p-4 inline-flex flex-col items-center">
+              <span className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-1">Filename</span>
+              <span className="font-mono font-bold text-sm">{expandedImage.filename}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -135,35 +215,81 @@ export default function GalleryView({ images, onNewUpload }: GalleryViewProps) {
 interface ImageCardProps {
   image: GalleryImage;
   index: number;
-  key?: string;
+  isSelected: boolean;
+  onToggleSelect: (id: string, e: React.MouseEvent) => void;
+  onClick: () => void;
 }
 
-function ImageCard({ image, index }: ImageCardProps) {
+function ImageCard({ image, index, isSelected, onToggleSelect, onClick }: ImageCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
-      className="group relative flex flex-col bg-white border-2 border-black hover:-translate-y-2 hover:shadow-[8px_8px_0_0_#000000] transition-all cursor-pointer overflow-hidden"
+      onClick={onClick}
+      className={`group relative flex flex-col border-2 transition-all cursor-pointer overflow-hidden ${
+        isSelected ? 'bg-primary border-black shadow-[8px_8px_0_0_#000000] -translate-y-2' : 'bg-white border-black hover:-translate-y-2 hover:shadow-[8px_8px_0_0_#000000]'
+      }`}
     >
       <div className="aspect-square relative overflow-hidden border-b-2 border-black">
         <img 
           src={image.url} 
           alt={image.filename} 
-          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+          className={`w-full h-full object-cover transition-all duration-500 ${isSelected ? 'grayscale-0' : 'grayscale group-hover:grayscale-0'}`}
           referrerPolicy="no-referrer"
         />
-        <div className="absolute top-2 right-2 px-2 py-1 bg-primary border border-black text-[9px] font-black uppercase tracking-widest">
+        <div className="absolute top-2 right-2 px-2 py-1 bg-primary border border-black text-[9px] font-black uppercase tracking-widest z-10">
           {image.type}
         </div>
+        
+        {/* Large checkmark overlay when selected */}
+        <AnimatePresence>
+          {isSelected && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-primary/20 flex items-center justify-center pointer-events-none"
+            >
+              <div className="w-16 h-16 bg-black text-primary rounded-full flex items-center justify-center border-4 border-primary">
+                <Check size={32} strokeWidth={4} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       
-      <div className="p-4 flex items-center justify-between bg-white group-hover:bg-primary transition-colors">
-        <span className="text-[10px] font-black uppercase tracking-widest truncate max-w-[150px]">
+      <div className={`p-4 flex items-center justify-between transition-colors ${isSelected ? 'bg-primary' : 'bg-white group-hover:bg-stone-50'}`}>
+        <span className="text-[10px] font-black uppercase tracking-widest truncate max-w-[120px]">
           {image.filename}
         </span>
-        <div className="w-8 h-8 border border-black flex items-center justify-center bg-white group-hover:invert transition-all">
-          <Download size={14} />
+        
+        <div className="flex items-center gap-2">
+          {/* Select Button */}
+          <button 
+            onClick={(e) => onToggleSelect(image.id, e)}
+            className={`w-8 h-8 border border-black flex items-center justify-center transition-all ${
+              isSelected ? 'bg-black text-white' : 'bg-white hover:bg-stone-200'
+            }`}
+            title={isSelected ? "Deselect" : "Select"}
+          >
+            <Check size={14} className={isSelected ? "opacity-100" : "opacity-30"} />
+          </button>
+          
+          {/* Direct Download Button */}
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              const a = document.createElement('a');
+              a.href = image.url;
+              a.download = image.filename;
+              a.click();
+            }}
+            className="w-8 h-8 border border-black flex items-center justify-center bg-white hover:bg-black hover:text-white transition-all"
+            title="Download image"
+          >
+            <Download size={14} />
+          </button>
         </div>
       </div>
     </motion.div>

@@ -15,11 +15,33 @@ export interface OBBResult {
 }
 
 /**
- * Loads the ONNX model from the given URL.
+ * Loads the ONNX model from the given URL and attempts to extract class names.
  */
-export async function loadModel(modelUrl: string): Promise<ort.InferenceSession> {
+export async function loadModel(modelUrl: string): Promise<{ session: ort.InferenceSession, classNames: Record<number, string> }> {
   // Use wasm or webgl based on browser capabilities. 'wasm' is more stable across devices.
-  return await ort.InferenceSession.create(modelUrl, { executionProviders: ['wasm'] });
+  const session = await ort.InferenceSession.create(modelUrl, { executionProviders: ['wasm'] });
+  
+  const classNames: Record<number, string> = {};
+  
+  try {
+    // Ultralytics usually stores class names in custom metadata
+    if (session.modelMetadata && session.modelMetadata.customMetadataMap) {
+      const namesStr = session.modelMetadata.customMetadataMap.names;
+      if (namesStr) {
+        // namesStr is often a string like "{0: 'person', 1: 'bicycle'}"
+        // Convert to valid JSON if needed (replace single quotes with double quotes)
+        const validJson = namesStr.replace(/'/g, '"');
+        const parsed = JSON.parse(validJson);
+        for (const key of Object.keys(parsed)) {
+          classNames[parseInt(key)] = parsed[key];
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("Could not parse class names from model metadata", e);
+  }
+
+  return { session, classNames };
 }
 
 /**

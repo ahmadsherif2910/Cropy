@@ -29,11 +29,14 @@ export function useProcessingPipeline({ files, modelSrc, onComplete }: UseProces
         
         // Step 0: Loading Model
         let session;
+        let classNames: Record<number, string> = {};
         try {
           console.log("[Pipeline] Starting to load ONNX model...");
           console.time("Model Load Time");
           const modelUrl = typeof modelSrc === 'string' ? modelSrc : URL.createObjectURL(modelSrc);
-          session = await loadModel(modelUrl);
+          const loaded = await loadModel(modelUrl);
+          session = loaded.session;
+          classNames = loaded.classNames;
           console.timeEnd("Model Load Time");
           console.log("[Pipeline] Model loaded successfully!");
         } catch (err) {
@@ -42,7 +45,6 @@ export function useProcessingPipeline({ files, modelSrc, onComplete }: UseProces
         }
         
         if (isCancelled) return;
-        setState({ stepIndex: 1, photo: 0 });
 
         // Step 1: Inference & Cropping per image
         for (let i = 0; i < files.length; i++) {
@@ -61,34 +63,39 @@ export function useProcessingPipeline({ files, modelSrc, onComplete }: UseProces
             img.src = imgUrl;
           });
 
-          console.time(`Photo ${i + 1} Preprocessing`);
           const { tensor, padX, padY, ratio } = preprocess(img);
-          console.timeEnd(`Photo ${i + 1} Preprocessing`);
-
-          console.time(`Photo ${i + 1} ONNX Inference`);
           const predictions = await runInference(session, tensor, ratio, padX, padY);
-          console.timeEnd(`Photo ${i + 1} ONNX Inference`);
-          console.log(`[Pipeline] Found ${predictions.length} objects in ${file.name}`);
-
-          console.time(`Photo ${i + 1} Cropping`);
           const crops = await extractCrops(img, file.name, predictions);
-          console.timeEnd(`Photo ${i + 1} Cropping`);
           
           const galleryImages: GalleryImage[] = crops.map((c, idx) => ({
             id: `${file.name}-${idx}-${Date.now()}`,
             url: c.url,
             filename: c.filename,
-            type: c.classId.toString() // We can map this to class names if provided
+            type: `Photo ${processedImages.current.length + idx + 1}`
           }));
 
           processedImages.current.push(...galleryImages);
 
-          setState({ stepIndex: 1, photo: i + 1 });
-          console.timeEnd(`Photo ${i + 1} Total Time`);
+          // Update photo progress but stay on step 0
+          setState({ stepIndex: 0, photo: i + 1 });
         }
 
         if (isCancelled) return;
-        setState({ stepIndex: 2, photo: totalPhotos });
+
+        // Step 1: Rotating & Straightening (Placeholder for future code)
+        setState({ stepIndex: 1, photo: 0 });
+        await new Promise(r => setTimeout(r, 500)); // Simulate work
+
+        if (isCancelled) return;
+
+        // Step 2: Generating structural previews (Placeholder for future code)
+        setState({ stepIndex: 2, photo: 0 });
+        await new Promise(r => setTimeout(r, 500)); // Simulate work
+
+        if (isCancelled) return;
+        
+        // Final completion state
+        setState({ stepIndex: 3, photo: totalPhotos });
         
         console.log("[Pipeline] All photos processed successfully!");
         // Wait briefly to show 100% completion state
