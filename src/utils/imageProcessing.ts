@@ -136,3 +136,60 @@ export async function drawDetections(
     classId: -1,
   }];
 }
+
+/**
+ * Applies a 90, 180, or 270 degree rotation to an image crop based on the orientation model class.
+ */
+export async function rotateImage(imageUrl: string, classId: number): Promise<string> {
+  if (classId === 0) return imageUrl;
+
+  const image = new Image();
+  await new Promise((resolve, reject) => {
+    image.onload = resolve;
+    image.onerror = reject;
+    image.src = imageUrl;
+  });
+
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return imageUrl;
+
+  const w = image.width;
+  const h = image.height;
+
+  let angleRad = 0;
+  if (classId === 1) { // 90 Clockwise
+    canvas.width = h;
+    canvas.height = w;
+    angleRad = 90 * Math.PI / 180;
+  } else if (classId === 2) { // 180
+    canvas.width = w;
+    canvas.height = h;
+    angleRad = 180 * Math.PI / 180;
+  } else if (classId === 3) { // 90 Counter-Clockwise (or 270)
+    canvas.width = h;
+    canvas.height = w;
+    angleRad = -90 * Math.PI / 180;
+  } else {
+    return imageUrl;
+  }
+
+  // Move origin to center of new canvas
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(angleRad);
+  // Draw image centered at the origin
+  ctx.drawImage(image, -w / 2, -h / 2);
+
+  const blobUrl = await new Promise<string>((resolve) => {
+    canvas.toBlob((blob) => {
+      if (blob) {
+        resolve(URL.createObjectURL(blob));
+      } else {
+        resolve('');
+      }
+    }, 'image/png');
+  });
+
+  return blobUrl || imageUrl;
+}
+

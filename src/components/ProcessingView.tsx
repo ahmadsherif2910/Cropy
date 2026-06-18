@@ -13,12 +13,12 @@ interface ProcessingViewProps {
 
 export default function ProcessingView({ files, modelSrc, onComplete, onCancel }: ProcessingViewProps) {
   const {
+    currentStepIndex,
     currentPhoto,
+    totalPhotos,
     progress,
     getStepStatus
   } = useProcessingPipeline({ files, modelSrc, onComplete });
-
-  const totalPhotos = files.length;
 
 
   const radius = 130;
@@ -86,7 +86,9 @@ export default function ProcessingView({ files, modelSrc, onComplete, onCancel }
             </span>
             <span className="text-xl md:text-2xl font-bold tracking-tighter">/ {totalPhotos}</span>
           </div>
-          <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest mt-2">photos</span>
+          <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest mt-2">
+            {currentStepIndex === 1 ? 'crops' : 'photos'}
+          </span>
         </div>
       </div>
 

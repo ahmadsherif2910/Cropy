@@ -145,3 +145,79 @@ export async function runInference(
 
   return finalResults;
 }
+
+/**
+ * Loads the Orientation ONNX model.
+ */
+export async function loadOrientationModel(modelUrl: string): Promise<ort.InferenceSession> {
+  return await ort.InferenceSession.create(modelUrl, { executionProviders: ['wasm'] });
+}
+
+/**
+ * Prepares an image for Orientation model inference.
+ * Replicates: T.Resize((416, 416)), T.CenterCrop(384), T.ToTensor(), T.Normalize()
+ */
+export function preprocessOrientation(image: HTMLImageElement): ort.Tensor {
+  const targetSize = 416;
+  const cropSize = 384;
+  
+  const canvas = document.createElement('canvas');
+  canvas.width = targetSize;
+  canvas.height = targetSize;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  if (!ctx) throw new Error("Failed to get canvas context");
+
+  // T.Resize((416, 416)) -> stretches to exactly 416x416
+  ctx.drawImage(image, 0, 0, targetSize, targetSize);
+
+  // T.CenterCrop(384)
+  const startX = Math.floor((targetSize - cropSize) / 2);
+  const startY = Math.floor((targetSize - cropSize) / 2);
+  const imageData = ctx.getImageData(startX, startY, cropSize, cropSize).data;
+
+  // Convert to [1, 3, cropSize, cropSize] Float32Array with ImageNet normalization
+  const float32Data = new Float32Array(3 * cropSize * cropSize);
+  
+  const means = [0.485, 0.456, 0.406];
+  const stds = [0.229, 0.224, 0.225];
+
+  for (let i = 0; i < cropSize * cropSize; i++) {
+    const r = imageData[i * 4] / 255.0;
+    const g = imageData[i * 4 + 1] / 255.0;
+    const b = imageData[i * 4 + 2] / 255.0;
+
+    float32Data[i] = (r - means[0]) / stds[0];
+    float32Data[cropSize * cropSize + i] = (g - means[1]) / stds[1];
+    float32Data[2 * cropSize * cropSize + i] = (b - means[2]) / stds[2];
+  }
+
+  return new ort.Tensor('float32', float32Data, [1, 3, cropSize, cropSize]);
+}
+
+/**
+ * Runs the Orientation model and returns the predicted class ID (0, 1, 2, 3).
+ */
+export async function runOrientationInference(
+  session: ort.InferenceSession,
+  tensor: ort.Tensor
+): Promise<number> {
+  const feeds: Record<string, ort.Tensor> = {};
+  feeds[session.inputNames[0]] = tensor;
+
+  const results = await session.run(feeds);
+  const output = results[session.outputNames[0]]; 
+  const data = output.data as Float32Array;
+  
+  // output is [1, 4] (batch_size, num_classes)
+  let maxIdx = 0;
+  let maxVal = -Infinity;
+  for (let i = 0; i < data.length; i++) {
+    if (data[i] > maxVal) {
+      maxVal = data[i];
+      maxIdx = i;
+    }
+  }
+
+  return maxIdx;
+}
+

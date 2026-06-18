@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { loadModel, preprocess, runInference } from '../utils/inference';
-import { extractCrops, drawDetections } from '../utils/imageProcessing';
+import { loadModel, preprocess, runInference, loadOrientationModel, preprocessOrientation, runOrientationInference } from '../utils/inference';
+import { extractCrops, drawDetections, rotateImage } from '../utils/imageProcessing';
 import { GalleryImage } from '../types';
 
 interface UseProcessingPipelineProps {
@@ -14,11 +14,12 @@ export function useProcessingPipeline({ files, modelSrc, onComplete }: UseProces
   const processedImages = useRef<GalleryImage[]>([]);
 
   const totalPhotos = files.length;
+  const currentTotal = state.stepIndex === 1 ? Math.max(1, processedImages.current.length) : totalPhotos;
   const totalSteps = 3; 
 
   const progress = state.stepIndex >= totalSteps
     ? 100
-    : (state.photo / Math.max(1, totalPhotos)) * 100;
+    : (state.photo / Math.max(1, currentTotal)) * 100;
 
   useEffect(() => {
     let isCancelled = false;
@@ -29,18 +30,22 @@ export function useProcessingPipeline({ files, modelSrc, onComplete }: UseProces
         
         // Step 0: Loading Model
         let session;
+        let orientationSession;
         let classNames: Record<number, string> = {};
         try {
-          console.log("[Pipeline] Starting to load ONNX model...");
+          console.log("[Pipeline] Starting to load ONNX models...");
           console.time("Model Load Time");
           const modelUrl = typeof modelSrc === 'string' ? modelSrc : URL.createObjectURL(modelSrc);
           const loaded = await loadModel(modelUrl);
           session = loaded.session;
           classNames = loaded.classNames;
+
+          orientationSession = await loadOrientationModel('/orientation_model.onnx');
+
           console.timeEnd("Model Load Time");
-          console.log("[Pipeline] Model loaded successfully!");
+          console.log("[Pipeline] Models loaded successfully!");
         } catch (err) {
-          console.error("[Pipeline] Failed to load model. Ensure it is accessible.", err);
+          console.error("[Pipeline] Failed to load models. Ensure they are accessible.", err);
           return;
         }
         
@@ -82,9 +87,32 @@ export function useProcessingPipeline({ files, modelSrc, onComplete }: UseProces
 
         if (isCancelled) return;
 
-        // Step 1: Rotating & Straightening (Placeholder for future code)
+        if (isCancelled) return;
+
+        // Step 1: Rotating & Straightening
         setState({ stepIndex: 1, photo: 0 });
-        await new Promise(r => setTimeout(r, 500)); // Simulate work
+        
+        for (let i = 0; i < processedImages.current.length; i++) {
+          if (isCancelled) return;
+          const currentImage = processedImages.current[i];
+          
+          const img = new Image();
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = currentImage.url;
+          });
+
+          const tensor = preprocessOrientation(img);
+          const classId = await runOrientationInference(orientationSession, tensor);
+          
+          if (classId !== 0) {
+            const newUrl = await rotateImage(currentImage.url, classId);
+            processedImages.current[i].url = newUrl;
+          }
+
+          setState({ stepIndex: 1, photo: i + 1 });
+        }
 
         if (isCancelled) return;
 
@@ -128,7 +156,7 @@ export function useProcessingPipeline({ files, modelSrc, onComplete }: UseProces
   return {
     currentStepIndex: state.stepIndex,
     currentPhoto: state.photo,
-    totalPhotos,
+    totalPhotos: currentTotal,
     progress,
     getStepStatus,
   };
