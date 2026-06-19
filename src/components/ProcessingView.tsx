@@ -95,10 +95,12 @@ export default function ProcessingView({ files, modelSrc, onComplete, onCancel }
       <div className="w-full max-w-lg">
         <h3 className="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.2em] mb-4 text-center">Runtime Logs</h3>
         <div className="space-y-2">
-          <OperationItem
-            status={getStepStatus(0)}
-            label="Auto-cropping"
-          />
+          {modelSrc !== 'sam3-external' && (
+            <OperationItem
+              status={getStepStatus(0)}
+              label="Auto-cropping"
+            />
+          )}
           <OperationItem
             status={getStepStatus(1)}
             label="Rotating & Straightening"

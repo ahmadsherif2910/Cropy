@@ -1,5 +1,5 @@
 import React from 'react';
-import { CloudUpload, CheckCircle2, Layers, Cpu, Settings2, LucideIcon, Folder, FileUp, Play } from 'lucide-react';
+import { CloudUpload, CheckCircle2, Layers, Cpu, Settings2, LucideIcon, Folder, FileUp, Play, Terminal } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface UploadViewProps {
@@ -9,7 +9,7 @@ interface UploadViewProps {
 }
 
 export default function UploadView({ files, setFiles, onStartProcessing }: UploadViewProps) {
-  const [modelType, setModelType] = React.useState<'default' | 'custom'>('default');
+  const [modelType, setModelType] = React.useState<'default' | 'custom' | 'sam3'>('default');
   const [customModel, setCustomModel] = React.useState('');
   const [customModelFile, setCustomModelFile] = React.useState<File | null>(null);
 
@@ -25,8 +25,10 @@ export default function UploadView({ files, setFiles, onStartProcessing }: Uploa
   const handleStart = () => {
     if (modelType === 'default') {
       onStartProcessing('/best.onnx');
-    } else if (customModelFile) {
+    } else if (modelType === 'custom' && customModelFile) {
       onStartProcessing(customModelFile);
+    } else if (modelType === 'sam3') {
+      onStartProcessing('sam3-external');
     }
   };
 
@@ -139,6 +141,38 @@ export default function UploadView({ files, setFiles, onStartProcessing }: Uploa
                       </span>
                       <FileUp size={14} />
                     </label>
+                  </div>
+                )}
+              </button>
+
+              <button
+                onClick={() => setModelType('sam3')}
+                className={`w-full p-4 border-2 flex flex-col transition-all ${modelType === 'sam3' ? 'bg-white border-black shadow-[4px_4px_0_0_#000000]' : 'bg-white border-black/20 opacity-60'
+                  }`}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-black flex items-center justify-center text-primary">
+                      <Terminal size={18} />
+                    </div>
+                    <span className="text-xs font-black uppercase tracking-wider text-left">SAM 3 (Local)</span>
+                  </div>
+                  {modelType === 'sam3' && <CheckCircle2 size={16} />}
+                </div>
+
+                {modelType === 'sam3' && (
+                  <div className="mt-4 w-full relative text-left" onClick={(e) => e.stopPropagation()}>
+                    <div className="p-3 bg-stone-100 border-2 border-black flex flex-col gap-2 cursor-default">
+                      <span className="font-mono text-[10px] uppercase font-bold text-black/60 leading-tight">
+                        1. Download <a href="/autocrop_sam3.py" download className="text-blue-600 underline hover:text-blue-800">autocrop_sam3.py</a>
+                      </span>
+                      <span className="font-mono text-[10px] uppercase font-bold text-black/60 leading-tight">
+                        2. Run it locally with your model.
+                      </span>
+                      <span className="font-mono text-[10px] uppercase font-bold text-black/60 leading-tight">
+                        3. Drop the cropped images here.
+                      </span>
+                    </div>
                   </div>
                 )}
               </button>
