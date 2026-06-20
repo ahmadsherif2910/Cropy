@@ -150,8 +150,8 @@ def process_images(input_dir: str, output_dir: str, model_path: str, prompt: str
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="SAM 3 Auto-Cropping Pipeline")
-    parser.add_argument("--input", type=str, default="unseen", help="Path to input images directory")
-    parser.add_argument("--output", type=str, default="cropped_results5", help="Path to save cropped outputs")
+    parser.add_argument("--input", type=str, default="photos_raw", help="Path to input images directory")
+    parser.add_argument("--output", type=str, default="cropped_results", help="Path to save cropped outputs")
     parser.add_argument("--model", type=str, default="sam3_model.pt", help="Path to SAM 3 model weights (.pt)")
     parser.add_argument("--prompt", type=str, default="photo", help="Text prompt for semantic segmentation")
     
