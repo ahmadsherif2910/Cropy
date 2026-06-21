@@ -14,7 +14,7 @@ export default function App() {
   const [activeScreen, setActiveScreen] = useState<Screen>('upload');
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [processedImages, setProcessedImages] = useState<GalleryImage[]>([]);
-  const [modelSrc, setModelSrc] = useState<string | File>('/best.onnx');
+  const [modelSrc, setModelSrc] = useState<string | File>('./best.onnx');
 
   const renderScreen = () => {
     switch (activeScreen) {

@@ -24,7 +24,7 @@ export default function UploadView({ files, setFiles, onStartProcessing }: Uploa
 
   const handleStart = () => {
     if (modelType === 'default') {
-      onStartProcessing('/best.onnx');
+      onStartProcessing('./best.onnx');
     } else if (modelType === 'custom' && customModelFile) {
       onStartProcessing(customModelFile);
     } else if (modelType === 'sam3') {
@@ -164,7 +164,7 @@ export default function UploadView({ files, setFiles, onStartProcessing }: Uploa
                   <div className="mt-4 w-full relative text-left" onClick={(e) => e.stopPropagation()}>
                     <div className="p-3 bg-stone-100 border-2 border-black flex flex-col gap-2 cursor-default">
                       <span className="font-mono text-[10px] uppercase font-bold text-black/60 leading-tight">
-                        1. Download <a href="/autocrop_sam3.py" download className="text-blue-600 underline hover:text-blue-800">autocrop_sam3.py</a>
+                        1. Download <a href="./autocrop_sam3.py" download className="text-blue-600 underline hover:text-blue-800">autocrop_sam3.py</a>
                       </span>
                       <span className="font-mono text-[10px] uppercase font-bold text-black/60 leading-tight">
                         2. Run it locally with your model.

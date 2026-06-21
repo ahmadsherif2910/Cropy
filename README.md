@@ -59,10 +59,10 @@ The AI capabilities in Cropy are built upon extensive custom dataset generation 
 
 ### Dataset Generation (YOLOv8-OBB)
 To train the object detection model, we built a custom pipeline to automatically annotate images with Oriented Bounding Boxes (OBB):
-- **[jupyter.ipynb](file:///c:/Ahmad/Programming/Cropytest/jupyter.ipynb)**: Iterate over raw images and use the Segment Anything Model 3 (SAM3) to accurately segment photos and documents. Compute the minimum area bounding rectangles around the identified contours and export the bounding boxes in YOLO OBB format.
-- **[public/autocrop_sam3.py](file:///c:/Ahmad/Programming/Cropytest/public/autocrop_sam3.py)**: Demonstrate the underlying approach with a standalone Python script. Leverage SAM3 to perform semantic segmentation and apply perspective transformations to warp and extract flattened crops automatically.
+- **[jupyter.ipynb](./jupyter.ipynb)**: Iterate over raw images and use the Segment Anything Model 3 (SAM3) to accurately segment photos and documents. Compute the minimum area bounding rectangles around the identified contours and export the bounding boxes in YOLO OBB format.
+- **[public/autocrop_sam3.py](./public/autocrop_sam3.py)**: Demonstrate the underlying approach with a standalone Python script. Leverage SAM3 to perform semantic segmentation and apply perspective transformations to warp and extract flattened crops automatically.
 
 ### Auto-Orientation Model
 After objects are detected and cropped, they might be sideways or upside down.
-To solve this, evaluate each crop using the **[public/orientation_model.onnx](file:///c:/Ahmad/Programming/Cropytest/public/orientation_model.onnx)** model. Predict the rotation needed (0°, 90°, 180°, or 270°) with this lightweight classification model to perfectly upright the image. 
+To solve this, evaluate each crop using the **[public/orientation_model.onnx](./public/orientation_model.onnx)** model. Predict the rotation needed (0°, 90°, 180°, or 270°) with this lightweight classification model to perfectly upright the image. 
 *Note: This orientation model was sourced from [duartebarbosadev/deep-image-orientation-detection](https://github.com/duartebarbosadev/deep-image-orientation-detection).*

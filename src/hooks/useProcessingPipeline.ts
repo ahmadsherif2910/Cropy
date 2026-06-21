@@ -36,7 +36,7 @@ export function useProcessingPipeline({ files, modelSrc, onComplete }: UseProces
         if (modelSrc === 'sam3-external') {
           console.log("[Pipeline] SAM 3 External mode: Skipping segmentation model load & inference.");
           try {
-            orientationSession = await loadOrientationModel('/orientation_model.onnx');
+            orientationSession = await loadOrientationModel('./orientation_model.onnx');
           } catch (err) {
             console.error("[Pipeline] Failed to load orientation model.", err);
             return;
@@ -69,7 +69,7 @@ export function useProcessingPipeline({ files, modelSrc, onComplete }: UseProces
             session = loaded.session;
             classNames = loaded.classNames;
 
-            orientationSession = await loadOrientationModel('/orientation_model.onnx');
+            orientationSession = await loadOrientationModel('./orientation_model.onnx');
 
             console.timeEnd("Model Load Time");
             console.log("[Pipeline] Models loaded successfully!");
