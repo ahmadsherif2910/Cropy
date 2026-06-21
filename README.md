@@ -15,7 +15,7 @@ While the application itself is hosted on the web, all image processing is perfo
 ## Key Features
 
 - **100% Client-Side Processing**: Process everything locally in your browser using ONNX Runtime Web. We employ no backend servers for image processing, meaning your photos are never uploaded or stored anywhere.
-- **Precise Object Detection**: Identify and isolate objects using a YOLOv8-OBB (Oriented Bounding Boxes) model, even when they are skewed or angled.
+- **Precise Object Detection**: Identify and isolate objects using a yolo26n-obb.pt (Oriented Bounding Boxes) model, even when they are skewed or angled.
 - **Auto-Orientation**: Evaluate cropped patches with a secondary neural network and automatically correct their rotation (0°, 90°, 180°, or 270°) to an upright position.
 - **Batch Operations**: Upload multiple images at once, process them through the AI pipeline, and download all your results in a convenient `.zip` file.
 - **Beautiful UI**: Experience a fluid, app-like user interface crafted with React, Tailwind CSS, and Framer Motion.
@@ -54,7 +54,7 @@ While you can try the app instantly via the [Live Demo](https://cropy-2b08d.web.
 ## Architecture & Pipeline
 
 1. **Pre-processing**: Resize, pad, and normalize the uploaded image into a tensor suitable for the ONNX model input.
-2. **Detection (YOLOv8-OBB)**: Process the tensor with the primary ONNX model to return oriented bounding boxes, extracting the exact coordinates, dimensions, and angles of the objects.
+2. **Detection (yolo26n-obb.pt)**: Process the tensor with the primary ONNX model to return oriented bounding boxes, extracting the exact coordinates, dimensions, and angles of the objects.
 3. **Orientation Check**: Analyze the extracted image patches using a lightweight secondary model to determine their true vertical alignment.
 4. **Final Render**: Rotate and crop the original image according to the model predictions using standard HTML5 Canvas operations, outputting perfectly aligned crops for the user to review and download.
 
@@ -62,7 +62,7 @@ While you can try the app instantly via the [Live Demo](https://cropy-2b08d.web.
 
 The AI capabilities in Cropy are built upon extensive custom dataset generation and robust pre-trained models.
 
-### Dataset Generation (YOLOv8-OBB)
+### Dataset Generation (yolo26n-obb.pt)
 To train the object detection model, we built a custom pipeline to automatically annotate images with Oriented Bounding Boxes (OBB):
 - **[jupyter.ipynb](./jupyter.ipynb)**: Iterate over raw images and use the Segment Anything Model 3 (SAM3) to accurately segment photos and documents. Compute the minimum area bounding rectangles around the identified contours and export the bounding boxes in YOLO OBB format.
 - **[public/autocrop_sam3.py](./public/autocrop_sam3.py)**: Demonstrate the underlying approach with a standalone Python script. Leverage SAM3 to perform semantic segmentation and apply perspective transformations to warp and extract flattened crops automatically.
