@@ -79,7 +79,9 @@ export default function ProcessingView({ files, modelSrc, onComplete, onCancel }
 
         {/* Center Content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center m-12 md:m-16 bg-white border-2 border-black rounded-full shadow-[inner_0_4px_10px_rgba(0,0,0,0.05)]">
-          <span className="text-[10px] font-bold text-black uppercase tracking-[0.2em] mb-2 opacity-50">Ingesting</span>
+          <span className="text-[10px] font-bold text-black uppercase tracking-[0.2em] mb-2 opacity-50">
+            {currentStepIndex === 0 ? (modelSrc === 'sam3-external' ? 'Loading' : 'Extracting') : 'Aligning'}
+          </span>
           <div className="flex items-baseline gap-2">
             <span className="font-display text-5xl md:text-7xl font-bold tracking-tighter leading-none">
               {progress >= 100 ? totalPhotos : currentPhoto}
@@ -95,7 +97,12 @@ export default function ProcessingView({ files, modelSrc, onComplete, onCancel }
       <div className="w-full max-w-lg">
         <h3 className="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.2em] mb-4 text-center">Runtime Logs</h3>
         <div className="space-y-2">
-          {modelSrc !== 'sam3-external' && (
+          {modelSrc === 'sam3-external' ? (
+            <OperationItem
+              status={getStepStatus(0)}
+              label="Loading Assets"
+            />
+          ) : (
             <OperationItem
               status={getStepStatus(0)}
               label="Auto-cropping"
