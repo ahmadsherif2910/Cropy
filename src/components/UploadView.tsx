@@ -12,6 +12,7 @@ export default function UploadView({ files, setFiles, onStartProcessing }: Uploa
   const [modelType, setModelType] = React.useState<'default' | 'custom' | 'sam3'>('default');
   const [customModel, setCustomModel] = React.useState('');
   const [customModelFile, setCustomModelFile] = React.useState<File | null>(null);
+  const [showSam3Help, setShowSam3Help] = React.useState(false);
 
   const fileCount = files.length;
   const isStartDisabled = fileCount === 0 || (modelType === 'custom' && !customModelFile);
@@ -52,7 +53,7 @@ export default function UploadView({ files, setFiles, onStartProcessing }: Uploa
             <div className="w-16 h-16 md:w-20 md:h-20 border-2 border-black flex items-center justify-center mb-6 md:mb-8 bg-white group-hover:bg-primary transition-colors">
               <CloudUpload size={32} />
             </div>
-            <h3 className="font-display text-2xl md:text-4xl font-bold uppercase tracking-tighter mb-4 text-center">Drop Assets<br />to Begin Analysis</h3>
+            <h3 className="font-display text-2xl md:text-4xl font-bold uppercase tracking-tighter mb-4 text-center">Upload<br />to Begin Analysis</h3>
             <p className="text-on-surface-variant text-xs md:text-sm mb-8 md:mb-12 text-center max-w-sm font-medium">
               {fileCount > 0
                 ? `${fileCount} assets staged for processing.`
@@ -157,7 +158,26 @@ export default function UploadView({ files, setFiles, onStartProcessing }: Uploa
                     </div>
                     <span className="text-xs font-black uppercase tracking-wider text-left">SAM 3 (Local)</span>
                   </div>
-                  {modelType === 'sam3' && <CheckCircle2 size={16} />}
+                  <div className="flex items-center gap-2">
+                    {modelType === 'sam3' && <CheckCircle2 size={16} />}
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowSam3Help(!showSam3Help);
+                      }}
+                      className="w-5 h-5 rounded-full border border-black flex items-center justify-center text-[10px] font-bold bg-stone-200 hover:bg-stone-300 relative transition-colors"
+                    >
+                      ?
+                      {showSam3Help && (
+                        <div 
+                          className="absolute bottom-full right-0 mb-2 w-64 p-3 bg-white border-2 border-black text-black text-[10px] normal-case font-sans z-[100] shadow-[4px_4px_0_0_#000000] leading-relaxed cursor-auto text-left"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Go to <a href="https://huggingface.co/facebook/sam3" target="_blank" rel="noreferrer" className="text-blue-600 underline hover:text-blue-800">https://huggingface.co/facebook/sam3</a>. You must first request access for the model weights on the SAM 3 model page on Hugging Face and then, once approved, download sam3.pt from that page. Place the downloaded sam3.pt file in your working directory or specify the full path when loading the model.
+                        </div>
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 {modelType === 'sam3' && (
@@ -170,7 +190,7 @@ export default function UploadView({ files, setFiles, onStartProcessing }: Uploa
                         2. Run it locally with your model.
                       </span>
                       <span className="font-mono text-[10px] uppercase font-bold text-black/60 leading-tight">
-                        3. Drop the cropped images here.
+                        3. Upload the cropped images.
                       </span>
                     </div>
                   </div>
