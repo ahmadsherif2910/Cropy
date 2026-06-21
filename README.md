@@ -1,32 +1,37 @@
 <div align="center">
-  <h1>✂️ Cropy</h1>
+  <h1>Cropy</h1>
   <p><strong>A privacy-first, purely in-browser AI image cropping and orientation tool.</strong></p>
+  <p><a href="https://cropy-2b08d.web.app" target="_blank">Live Demo</a></p>
 </div>
 
 ---
 
-## 🌟 Overview
+## Overview
 
-**Cropy** is a web application that leverages state-of-the-art ONNX models to automatically detect, crop, and orient objects in images. Because all inference happens via WebAssembly directly in your browser, your images **never** leave your device, ensuring complete data privacy.
+**Cropy** is a web application that leverages state-of-the-art ONNX models to automatically detect, crop, and orient objects in images. Because all inference happens via WebAssembly directly in your browser, your images **never** leave your device, ensuring complete data privacy. 
 
-## ✨ Key Features
+While the application itself is hosted on the web, all image processing is performed entirely client-side.
 
-- **🔒 100% Client-Side Processing**: Process everything locally in your browser using ONNX Runtime Web. We employ no servers and no uploads.
-- **🎯 Precise Object Detection**: Identify and isolate objects using a YOLOv8-OBB (Oriented Bounding Boxes) model, even when they are skewed or angled.
-- **🔄 Auto-Orientation**: Evaluate cropped patches with a secondary neural network and automatically correct their rotation (0°, 90°, 180°, or 270°) to an upright position.
-- **⚡ Batch Operations**: Upload multiple images at once, process them through the AI pipeline, and download all your results in a convenient `.zip` file.
-- **🎨 Beautiful UI**: Experience a fluid, app-like user interface crafted with React, Tailwind CSS, and Framer Motion.
+## Key Features
 
-## 🛠️ Technology Stack
+- **100% Client-Side Processing**: Process everything locally in your browser using ONNX Runtime Web. We employ no backend servers for image processing, meaning your photos are never uploaded or stored anywhere.
+- **Precise Object Detection**: Identify and isolate objects using a YOLOv8-OBB (Oriented Bounding Boxes) model, even when they are skewed or angled.
+- **Auto-Orientation**: Evaluate cropped patches with a secondary neural network and automatically correct their rotation (0°, 90°, 180°, or 270°) to an upright position.
+- **Batch Operations**: Upload multiple images at once, process them through the AI pipeline, and download all your results in a convenient `.zip` file.
+- **Beautiful UI**: Experience a fluid, app-like user interface crafted with React, Tailwind CSS, and Framer Motion.
+- **Automated Deployments**: Seamlessly deployed and delivered via Firebase Hosting, continuously integrated via GitHub Actions.
+
+## Technology Stack
 
 - **Frontend Core**: React 19, TypeScript, Vite
 - **Machine Learning**: ONNX Runtime Web (`onnxruntime-web`)
 - **Styling & Animation**: Tailwind CSS, Motion (Framer Motion), Lucide React
 - **File Handling**: JSZip
+- **Hosting & CI/CD**: Firebase Hosting & GitHub Actions
 
-## 🚀 Getting Started
+## Development Setup
 
-Follow these instructions to set up and run the application on your local machine.
+While you can try the app instantly via the [Live Demo](https://cropy-2b08d.web.app), you can also run it locally for development.
 
 ### Prerequisites
 - Node.js (v18 or newer recommended)
@@ -43,17 +48,17 @@ Follow these instructions to set up and run the application on your local machin
    npm run dev
    ```
 
-3. **Access the Application:**
+3. **Access the Application Locally:**
    Open your browser and navigate to `http://localhost:3000` (or the port specified by Vite in your terminal).
 
-## 🧠 Architecture & Pipeline
+## Architecture & Pipeline
 
 1. **Pre-processing**: Resize, pad, and normalize the uploaded image into a tensor suitable for the ONNX model input.
 2. **Detection (YOLOv8-OBB)**: Process the tensor with the primary ONNX model to return oriented bounding boxes, extracting the exact coordinates, dimensions, and angles of the objects.
 3. **Orientation Check**: Analyze the extracted image patches using a lightweight secondary model to determine their true vertical alignment.
 4. **Final Render**: Rotate and crop the original image according to the model predictions using standard HTML5 Canvas operations, outputting perfectly aligned crops for the user to review and download.
 
-## 🤖 Model Training & Technical Details
+## Model Training & Technical Details
 
 The AI capabilities in Cropy are built upon extensive custom dataset generation and robust pre-trained models.
 
