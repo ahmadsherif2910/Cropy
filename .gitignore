@@ -7,3 +7,5 @@ coverage/
 .env*
 !.env.example
 sam3_model.pt
+.firebase/
+.agents/
