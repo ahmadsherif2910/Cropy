@@ -15,11 +15,40 @@ export interface OBBResult {
 }
 
 /**
+ * Wrapper to explicitly cache model files so they load instantly offline/on subsequent loads.
+ */
+async function fetchWithCache(url: string): Promise<string | ArrayBuffer> {
+  if (url.startsWith('blob:')) return url; // Don't cache Object URLs
+  if (!('caches' in window)) return url;
+
+  try {
+    const cache = await caches.open('cropy-models-v1');
+    const cachedResponse = await cache.match(url);
+    if (cachedResponse) {
+      console.log(`[Cache] Loaded model from cache: ${url}`);
+      return await cachedResponse.arrayBuffer();
+    }
+    
+    console.log(`[Cache] Fetching model from network: ${url}`);
+    const response = await fetch(url);
+    if (response.ok) {
+      await cache.put(url, response.clone());
+      return await response.arrayBuffer();
+    }
+  } catch (err) {
+    console.warn("Failed to use Cache API, falling back to network URL.", err);
+  }
+  
+  return url;
+}
+
+/**
  * Loads the ONNX model from the given URL and attempts to extract class names.
  */
 export async function loadModel(modelUrl: string): Promise<{ session: ort.InferenceSession, classNames: Record<number, string> }> {
   // Use wasm or webgl based on browser capabilities. 'wasm' is more stable across devices.
-  const session = await ort.InferenceSession.create(modelUrl, { executionProviders: ['wasm'] });
+  const cachedInput = await fetchWithCache(modelUrl);
+  const session = await ort.InferenceSession.create(cachedInput as any, { executionProviders: ['wasm'] });
   
   const classNames: Record<number, string> = {};
   
@@ -150,7 +179,8 @@ export async function runInference(
  * Loads the Orientation ONNX model.
  */
 export async function loadOrientationModel(modelUrl: string): Promise<ort.InferenceSession> {
-  return await ort.InferenceSession.create(modelUrl, { executionProviders: ['wasm'] });
+  const cachedInput = await fetchWithCache(modelUrl);
+  return await ort.InferenceSession.create(cachedInput as any, { executionProviders: ['wasm'] });
 }
 
 /**
